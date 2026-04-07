@@ -75,6 +75,22 @@ async def keno_websocket(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
+@app.websocket("/stream/vietlott")
+async def vietlott_websocket(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text() # Giữ kết nối sống
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+@app.post("/api/internal/vietlott-webhook")
+async def vietlott_internal_webhook(data: dict):
+    # Webhook nhận dữ liệu từ vietlott_agent (Playwright) và push qua WebSockets
+    import json
+    await manager.broadcast(json.dumps(data))
+    return {"status": "BROADCASTED"}
+
 @app.post("/api/trigger-refresh")
 async def trigger_refresh():
     # Ra lệnh cho tất cả Dashboard đang mở: "CẬP NHẬT NGAY!"

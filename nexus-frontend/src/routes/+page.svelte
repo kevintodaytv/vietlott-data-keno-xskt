@@ -2,6 +2,8 @@
   import { Canvas } from '@threlte/core';
   import QuantumSphere from '$lib/QuantumSphere.svelte';
   import CognitionGauge from '$lib/CognitionGauge.svelte';
+  import VietlottHub from '$lib/VietlottHub.svelte';
+  import MobileVietlottHub from '$lib/MobileVietlottHub.svelte';
   import { onMount } from 'svelte';
 
   // ─── STATE ────────────────────────────────────────────────────────────────
@@ -459,6 +461,16 @@
       </section>
 
       <!-- HEATMAP & ANCHORS (VIETLOTT) ───────────────────────── -->
+      {#if selectedRegion === 'VIETLOTT'}
+        <!-- CRIMSON HUB NEW INTEGRATION -->
+        <div class="hidden md:block w-full max-w-4xl mx-auto mt-4 px-4">
+           <VietlottHub />
+        </div>
+        <div class="block md:hidden w-full mx-auto max-w-[400px]">
+           <MobileVietlottHub />
+        </div>
+      {/if}
+      
       {#if selectedRegion === 'VIETLOTT' && Object.keys(heatmapData).length > 0}
         <div class="space-y-12 mt-12 z-10 relative" style="width:100%;max-width:900px;align-self:center;">
           <section class="glass-panel p-6 border-t border-cyan-500/30">
