@@ -1,0 +1,149 @@
+@import "tailwindcss";
+
+/* ====================================================================
+   TECH-ORACLE — GLOBAL DESIGN SYSTEM
+   Amber Glow | Cyberpunk Dark | Alien-Nexus Aesthetic
+   ==================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* ── CSS Variables ─────────────────────────────────────────────────── */
+:root {
+  /* Amber Glow Palette */
+  --amber-100: #fff8e1;
+  --amber-400: #ffca28;
+  --amber-500: #ffc107;
+  --amber-glow: #ffb300;
+
+  /* Neon Accents */
+  --neon-green:  #00ff88;
+  --neon-red:    #ff2244;
+  --neon-blue:   #00d4ff;
+  --neon-purple: #bf5af2;
+
+  /* Dark Background */
+  --bg-void:    #060810;
+  --bg-deep:    #0a0e1a;
+  --bg-surface: #111827;
+  --bg-card:    #1a2035;
+  --bg-hover:   #232d45;
+
+  /* Text */
+  --text-primary:   #f0f4ff;
+  --text-secondary: #8b9dc3;
+  --text-muted:     #4a5578;
+
+  /* Border */
+  --border-dim:   rgba(255, 179, 0, 0.12);
+  --border-glow:  rgba(255, 179, 0, 0.45);
+  --border-focus: rgba(0, 212, 255, 0.6);
+
+  /* Shadows */
+  --shadow-amber:  0 0 24px rgba(255, 179, 0, 0.25);
+  --shadow-neon:   0 0 32px rgba(0, 212, 255, 0.2);
+  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.6);
+
+  /* Typography */
+  --font-sans: 'Outfit', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+
+  /* Transition */
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--amber-glow); border-radius: 3px; }
+
+/* ── Typography ────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+code, pre, .mono {
+  font-family: var(--font-mono);
+}
+
+/* ── Utility Classes ───────────────────────────────────────────────── */
+.glow-amber { text-shadow: 0 0 20px var(--amber-glow); color: var(--amber-glow); }
+.glow-green { text-shadow: 0 0 20px var(--neon-green); color: var(--neon-green); }
+.glow-blue  { text-shadow: 0 0 20px var(--neon-blue);  color: var(--neon-blue); }
+.glow-red   { text-shadow: 0 0 20px var(--neon-red);   color: var(--neon-red); }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.card:hover {
+  border-color: var(--border-glow);
+  box-shadow: var(--shadow-amber);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+.badge-online  { background: rgba(0,255,136,0.12); color: var(--neon-green); border: 1px solid rgba(0,255,136,0.3); }
+.badge-offline { background: rgba(255,34,68,0.12);  color: var(--neon-red);   border: 1px solid rgba(255,34,68,0.3); }
+.badge-amber   { background: rgba(255,179,0,0.12);  color: var(--amber-glow); border: 1px solid rgba(255,179,0,0.3); }
+
+/* ── Animations ────────────────────────────────────────────────────── */
+@keyframes pulse-amber {
+  0%, 100% { box-shadow: 0 0 8px rgba(255,179,0,0.3); }
+  50%       { box-shadow: 0 0 24px rgba(255,179,0,0.7); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-fade-in-up { animation: fade-in-up 0.5s ease forwards; }
+.animate-pulse-amber { animation: pulse-amber 2s ease-in-out infinite; }

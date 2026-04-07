@@ -1,0 +1,31 @@
+{
+  "name": "nexus-frontend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev --host 0.0.0.0 --port 3333",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 3333",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-node": "^5.5.4",
+    "@sveltejs/kit": "^2.5.5",
+    "@sveltejs/vite-plugin-svelte": "^3.1.0",
+    "@tailwindcss/postcss": "^4.2.2",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "svelte": "^4.2.15",
+    "svelte-check": "^3.7.1",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.8"
+  },
+  "dependencies": {
+    "@threlte/core": "^7.3.2",
+    "@threlte/extras": "^8.12.3",
+    "three": "^0.163.0"
+  },
+  "type": "module"
+}

@@ -1,0 +1,46 @@
+# ══════════════════════════════════════════════════════════════════
+#   .dockerignore — Root Level (cho docker-compose build context)
+#   Áp dụng cho toàn bộ project khi không có file riêng per-service
+# ══════════════════════════════════════════════════════════════════
+
+# Node
+node_modules
+npm-debug.log*
+*.log
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+
+# Git
+.git
+.gitignore
+
+# IDE & OS
+.vscode
+.idea
+*.local
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist
+build
+.svelte-kit
+.cache
+
+# Secrets
+.env
+*.env.*
+!.env.example
+
+# Docker
+docker-compose.override.yml
+
+# Tests & CI
+tests/
+.github/
+coverage/

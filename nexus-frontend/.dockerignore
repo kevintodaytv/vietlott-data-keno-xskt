@@ -1,0 +1,8 @@
+node_modules
+.svelte-kit
+build
+dist
+.cache
+.env
+*.local
+npm-debug.log*

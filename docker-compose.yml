@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # 1. THE VAULT (Bộ nhớ Redis) -> Đã chuyển sang chế độ Tàng hình tuyệt đối
+  vault_memory:
+    image: redis:alpine
+    # Đã XÓA mục ports. Chỉ giao tiếp nội bộ trong mạng alien_network.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - alien_network
+
+  # [MỚI] 1.5 KÉT SẮT DỮ LIỆU (PostgreSQL)
+  db_vault:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: alien_admin
+      POSTGRES_PASSWORD: The_Absolute_Password_2026
+      POSTGRES_DB: tech_oracle_db
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./infrastructure/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - alien_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alien_admin -d tech_oracle_db"]
+      interval: 10s
+      timeout: 10s
+      retries: 10      # Tăng lên 10 lần thử (100 giây)
+
+  # 2. THE CORE (Trái tim Điều phối & Playwright Scraper)
+  core_api:
+    build: ./core-backend
+    ports:
+      - "8000:8000" # Đưa về Chuẩn Lõi 8000
+    env_file:
+      - ./core-backend/.env
+    environment:
+      - DATABASE_URL=postgresql://alien_admin:The_Absolute_Password_2026@db_vault:5432/tech_oracle_db
+    depends_on:
+      vault_memory:
+        condition: service_healthy
+      db_vault:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 10s
+      timeout: 15s     # Cho phép API phản hồi chậm hơn
+      retries: 15      # Tăng lên 15 lần thử (150 giây) để đợi Chromium & AI load xong
+    networks:
+      - alien_network
+
+  # 3. THE NEXUS (Giao diện 3D SvelteKit)
+  nexus_ui:
+    build: ./nexus-frontend
+    ports:
+      - "3333:3000" # Mở cổng 3333 cho bên ngoài, ánh xạ vào cổng 3000 của Vite bên trong
+    # TẠM THỜI TẮT ĐIỀU KIỆN ĐỢI BACKEND ĐỂ FRONTEND ĐƯỢC PHÉP CHẠY TRƯỚC
+    # depends_on:
+    #   core_api:
+    #     condition: service_healthy
+    environment:
+      - VITE_CORE_API_URL=http://localhost:8000
+    networks:
+      - alien_network
+
+# Khai báo Volume vật lý để dữ liệu không bị mất khi xóa Container
+volumes:
+  pg_data:
+
+# Kén bảo vệ sinh học: Cô lập hệ thống khỏi rác của Windows Host
+networks:
+  alien_network:
+    driver: bridge
