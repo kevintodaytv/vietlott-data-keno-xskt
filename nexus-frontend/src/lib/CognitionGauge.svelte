@@ -1,17 +1,23 @@
 <script lang="ts">
+  import { tweened } from 'svelte/motion';
+  import { cubicOut } from 'svelte/easing';
+
   export let confidence: number | null = null;
   export let isAnalyzing: boolean = false;
 
   let matrixText = '';
-  // Simple matrix effect loop
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*';
+  
+  const animatedConfidence = tweened(0, { duration: 1500, easing: cubicOut });
 
   $: if (isAnalyzing) {
     matrixText = 'Simulating 10,000 nodes...';
+    animatedConfidence.set(Math.random() * 80 + 10);
   } else if (confidence !== null) {
     matrixText = 'Optimal path found.';
+    animatedConfidence.set(confidence);
   } else {
     matrixText = 'Standing by for ignition...';
+    animatedConfidence.set(0);
   }
 
   $: gaugeValue = confidence ?? 0;
@@ -36,18 +42,12 @@
     <div class="cg-confidence">
       <span class="cg-label">CONFIDENCE</span>
       <span class="cg-value {colorClass}">
-        {#if isAnalyzing}
-          --.-%
-        {:else if confidence !== null}
-          {confidence.toFixed(1)}%
-        {:else}
-          0.0%
-        {/if}
+          {$animatedConfidence.toFixed(1)}%
       </span>
     </div>
     
     <div class="cg-bar-wrap">
-      <div class="cg-bar {colorClass}" style="width: {isAnalyzing ? Math.random() * 80 + 10 : gaugeValue}%"></div>
+      <div class="cg-bar {colorClass}" style="width: {$animatedConfidence}%"></div>
     </div>
   </div>
 </div>

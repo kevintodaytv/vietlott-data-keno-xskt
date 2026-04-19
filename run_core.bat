@@ -4,7 +4,7 @@ echo ====================================================
 echo 🧠 KICH HOAT THE CORE (NATIVE WINDOWS)
 echo ====================================================
 echo Dang di chuyen vao can cu Backend...
-cd core-backend
+cd _code\core-backend
 
 echo.
 echo [1/2] Kiem tra va nap thu vien Python...

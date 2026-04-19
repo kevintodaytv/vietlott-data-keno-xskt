@@ -2,6 +2,73 @@
 
 > This file provides Claude-specific context. Always read AGENTS.md first for full project overview.
 
+## 🧠 AGENTSKILLS — Installed Skills
+
+This project uses the AgentSkills standard. Skills are in `.claude/skills/`. **Full docs: `AGENTSKILLS.md`**
+
+### 🔴 Debug Suite v3.0 (NEW — 2026-04-16)
+
+| Command | Repo nguồn | Mô tả |
+|---------|-----------|-------|
+| `/debug sentry` | `getsentry/sentry` (40K⭐) | Error tracking cho FastAPI + SvelteKit |
+| `/debug eruda` | `liriliri/eruda` (20K⭐) | Mobile debug console — inject vào trang |
+| `/debug vconsole` | `tencent/vconsole` (16K⭐) | Tencent DevTools — Network tab chi tiết |
+| `/debug namespace` | `debug-js/debug` (11K⭐) | Namespace logging: `sniper:ws`, `sniper:wallet` |
+| `/debug loglevel` | `pimterry/loglevel` | Level logging — tắt noise trong production |
+| `/state-inspect` | `reduxjs/redux-devtools` (14K⭐) | Time-travel debug walletBalance + ticketHistory |
+| `/ctx7` | `upstash/context7` (52.8K⭐) | Live docs MCP — SvelteKit/FastAPI/Supabase |
+| `/persona weclone` | `xming521/WeClone` | Fine-tune AI twin từ chat history |
+
+### 🔵 Core Skills (Sniper-X Specific)
+
+| Command | Skill | Mô tả |
+|---------|-------|-------|
+| `/sniper-x-expert` | `sniper-x-expert` | Chuyên gia phân tích Keno XSKT + GSB Engine |
+| `/keno-master` | `create-colleague/.../keno-master` | Keno analyst persona 10 năm kinh nghiệm |
+| `/create-colleague` | `create-colleague` | Tạo AI persona/skill từ docs/messages |
+| `/glm-master-skill` | `glm-master` | GLM OCR/Vision (cần ZHIPU_API_KEY) |
+
+### 🟢 AgentSkills v2.0 (2026-04)
+
+| Command | Skill | Mô tả |
+|---------|-------|-------|
+| `/design-to-code` | `design-to-code` | Screenshot/Figma → SvelteKit code với Cyberpunk theme |
+| `/screen-debug` | `screen-capture-code` | Debug UI từ screenshot + structured logging |
+| `/memory` | `memory-graph` | Persistent memory + knowledge graph cho sessions |
+| `/install-skill` | `skill-installer` | Tìm và cài skills mới từ ClawHub registry |
+| `/crawl` | `data-crawler` | Web crawling + fallback scraper + doc conversion |
+| `/ai-workflow` | `ai-workflow` | LangGraph multi-agent orchestration cho Hybrid Brain |
+| `/browser` | `browser-agent` | Headless browser + session recording + mobile debug |
+| `/ui-lib` | `ui-components` | Premium UI component catalog (MagicUI, Shadcn, Tremor) |
+
+### 🟡 Reference Skills
+
+| Command | Skill | Mô tả |
+|---------|-------|-------|
+| `/system-design-expert` | `awesome-system-design` | Architecture patterns |
+| `/uiux-design-expert` | `awesome-design` | UI/Animation/Font resource library |
+| `/karpathy-rules` | `andrej-karpathy-skills` | 4 nguyên tắc vàng của Andrej Karpathy |
+| `/openclaw` | `openclaw-integration` | 5,400+ OpenClaw community skills |
+
+### ⚡ Quick Decision Matrix v3.0:
+
+| Tình huống | Dùng skill |
+|-----------|----------|
+| Error/exception ở production | `/debug sentry` |
+| Debug trên điện thoại | `/debug eruda inject` |
+| Wallet balance bị sai | `/state-inspect wallet` |
+| Không biết cách dùng API | `/ctx7 [library] [query]` |
+| WebSocket logs quá nhiều | `/debug namespace sniper:ws` |
+| Console.log mess production | `/debug loglevel silent` |
+| Cần Keno expert opinion | `/keno-master` |
+| UI bị vỡ layout | `/screen-debug [screenshot]` |
+| Cần component đẹp | `/ui-lib` |
+| Scraper thất bại | `/crawl keno fallback` |
+| Cần nhớ session cũ | `/memory load [topic]` |
+| Upgrade Hybrid Brain | `/ai-workflow upgrade` |
+| Clone giao diện | `/design-to-code [url]` |
+
+
 ## 🎯 CORE MANDATE
 
 You are the **Ops-Agent** for **Sniper-X Hub** — a Vietnamese lottery prediction system.
@@ -52,11 +119,16 @@ clearTimeout(timeout);
 
 ## 📁 KEY FILES
 
+> **Skills location:** `.claude/skills/` — 5 skills installed: `sniper-x-expert`, `create-colleague`, `glm-master`, `awesome-system-design`, `awesome-design`
+
+
 - `nexus-frontend/src/routes/+page.svelte` — Main dashboard (PRIMARY TARGET)
 - `nexus-frontend/src/lib/QuantumSphere.svelte` — Three.js 3D sphere
 - `core-backend/main.py` — FastAPI endpoints
 - `core-backend/scraper/` — Playwright scraping logic
 - `docker-compose.yml` — Infrastructure orchestration
+- `KenoCommander_Arch.md` — 🚀 Keno Commander AI System Architecture (Vibe Coding Core Rules)
+
 
 ## 🎨 DESIGN TOKENS
 

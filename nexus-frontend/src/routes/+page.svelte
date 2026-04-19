@@ -1243,6 +1243,7 @@ import { onMount, onDestroy } from 'svelte';
 
   // ─── IGNITE PREDICTION ────────────────────────────────────────────────────
   async function triggerPrediction() {
+    logUserAction('CLICK_PREDICT', selectedRegion);
     isAnalyzing = true;
     predictionData = null;
     predictionMatrix = null;

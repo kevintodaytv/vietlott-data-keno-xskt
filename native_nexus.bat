@@ -5,7 +5,7 @@ echo 🚀 KICH HOAT THE NEXUS TRUC TIEP TREN WINDOWS
 echo ====================================================
 echo.
 echo Dang tien vao thu muc nexus-frontend...
-cd nexus-frontend
+cd _code\nexus-frontend
 
 echo.
 echo Dang quet va sua loi thu vien (co the mat 1-2 phut)...

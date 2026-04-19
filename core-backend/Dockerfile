@@ -21,7 +21,6 @@ COPY . .
 # Tạo thư mục shared cho QA Sniper screenshots
 RUN mkdir -p /tmp/qa_screenshots /app/shared_data
 
-EXPOSE 8000
+EXPOSE 8888
 
-# --reload để dev mode tự hot-reload khi code thay đổi
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8888"]

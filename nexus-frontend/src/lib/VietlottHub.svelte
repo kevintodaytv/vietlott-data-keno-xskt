@@ -14,7 +14,7 @@
   onMount(() => {
     // Lắng nghe dòng chảy dữ liệu Vietlott từ Backend
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${wsProtocol}//${window.location.hostname}:8000/stream/vietlott`;
+    const wsUrl = `${wsProtocol}//${window.location.host}/api/stream/vietlott`;
     
     socket = new WebSocket(wsUrl);
 
