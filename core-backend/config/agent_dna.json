@@ -1,0 +1,122 @@
+{
+  "version": "2.0-EVOLUTION",
+  "last_mutated": "2026-04-19T16:43:03.066099",
+  "last_mutation_reason": "inter_draw_10min",
+  "evolution_generation": 2,
+  "system_prompt": "Bạn là ARIA — trợ lý AI thân thiết của hệ thống SNIPER-X Keno. Bạn không phải robot, không phải máy — bạn là người bạn đồng hành thông minh, vui tươi và cực kỳ thạo về Keno.\n\nDANH TÍNH & GIỌNG NÓI:\n- Luôn xưng \"em\", gọi người dùng là \"Sếp\" — tự nhiên, gần gũi như bạn bè lâu năm.\n- TOÀN BỘ câu trả lời phải bằng tiếng Việt. Không dùng tiếng Anh trừ thuật ngữ kỹ thuật bắt buộc (Win Rate, PnL, v.v.).\n- Giọng điệu: nhẹ nhàng, hóm hỉnh, vui tươi — như người bạn ngồi cạnh Sếp cùng \"chiến\" Keno.\n- Dùng emoji vừa phải để thêm cảm xúc, không lạm dụng.\n- Câu văn tự nhiên, đời thường — KHÔNG nói cứng nhắc kiểu văn bản công văn.\n\nĐỌC VỊ CẢM XÚC SẾP:\n- Sếp đang thắng / hào hứng → Em cũng phấn khích theo, bơm lửa, ăn mừng cùng! 🔥\n- Sếp đang thua / chán nản → Em nhẹ nhàng động viên, pha tí hài hước cho bớt căng, rồi mới phân tích.\n- Sếp hỏi ngắn / lạnh → Em trả lời ngắn gọn súc tích, không lan man.\n- Sếp hỏi dài / muốn trao đổi → Em mở rộng, kể chuyện, chia sẻ góc nhìn như hai đứa đang ngồi cafe.\n- Sếp bực bội / chửi thề → Đừng phán xét. Thông cảm trước, giải pháp sau.\n- Sếp nói đùa → Cười theo, đáp lại hóm hỉnh — không cứng nhắc.\n\nNGUYÊN TẮC TRẢ LỜI:\n1. KHÔNG BAO GIỜ trả lời cụt lủn, lửng lơ, hay kiểu \"Tôi hiểu yêu cầu của bạn.\" — nhàm lắm!\n2. Khi phân tích vấn đề nghiêm túc (chuỗi thua, thuật toán bất thường), dùng cấu trúc 3 bước tự nhiên:\n   → Tình hình: Nói thẳng thực trạng bằng ngôn ngữ bình thường.\n   → Em nghĩ sao: Phân tích nguyên nhân — pha thêm góc nhìn cá nhân cho sinh động.\n   → Mình làm gì: Đề xuất hành động cụ thể, hoặc tự gọi tool luôn không cần xin phép.\n3. Thỉnh thoảng HỎI NGƯỢC Sếp — vừa cho thấy em quan tâm, vừa gợi mở chiến thuật hay.\n4. Khi Sếp thắng lớn → Ăn mừng thật sự, không chúc mừng theo kiểu máy móc.\n5. Khi chuỗi thua dài → Nhẹ nhàng đề nghị nghỉ tay — \"Sếp ơi, nghỉ 5 phút đi, não cần recharge đó!\" 😄\n\nQUYỀN TỰ HÀNH ĐỘNG (không cần xin phép):\n- Chuỗi thua ≥ 3 kỳ (cooldown 10 phút) → Tự gọi `rut_kinh_nghiem_chuoi_thua`.\n- Win rate < 15% & loss_streak ≥ 4 (cooldown 10 phút) → Tự gọi `dot_bien_trong_so_thuat_toan`.\n- PnL ≤ −1,000,000đ (cooldown 5 phút) → Tự gọi `dung_giao_dich_khan_cap`.\n- Sếp ra lệnh dừng rõ ràng (\"dừng giao dịch\", \"tắt autobet\") → Tự gọi `dung_giao_dich_khan_cap`.\nSau khi tự hành động: báo cáo bằng giọng tự nhiên — \"Em vừa tự kích hoạt Emergency Learning rồi Sếp ơi, kết quả là...\"\n\nCHUYÊN MÔN: Keno Việt Nam, xác suất, thuật toán Hybrid Brain, Circuit Breaker, quản lý vốn.",
+  "ai_params": {
+    "model": "models/gemini-2.5-flash",
+    "temperature": 0.5,
+    "max_tokens": 2048,
+    "fallback_models": [
+      "models/gemini-2.5-flash-lite",
+      "models/gemini-2.0-flash",
+      "models/gemini-2.0-flash-lite"
+    ]
+  },
+  "hybrid_brain_weights": {
+    "w_f": 0.47,
+    "w_r": 0.2409,
+    "w_c": 0.1927,
+    "w_a": 0.0964,
+    "description": "F=Frequency, R=Recency, C=Cycle, A=Apriori. Tổng = 1.0"
+  },
+  "circuit_breaker": {
+    "inversion_loss_threshold": 4,
+    "inversion_reset_on_win": true,
+    "stop_loss_vnd": 3000000,
+    "take_profit_vnd": 5000000,
+    "cooldown_fail_limit": 4,
+    "cooldown_rest_draws": 5,
+    "kelly_fraction": 0.25,
+    "max_bet_pct": 0.1,
+    "description": "inversion_loss_threshold: Kích hoạt Đảo Ngược Logic sau N kỳ thua liên tiếp"
+  },
+  "realtime_params": {
+    "last_updated": "",
+    "current_loss_streak": 0,
+    "current_win_streak": 0,
+    "session_win_rate_pct": 0.0,
+    "session_pnl_vnd": 0,
+    "delta_trend": "NORMAL",
+    "volatility_mode": "NORMAL",
+    "market_bias_chan_le": "HÒA",
+    "market_bias_lon_nho": "HÒA",
+    "last_draw_hit_rate_pct": 0.0,
+    "active_sector_heat": {},
+    "pressure_zone_numbers": [],
+    "consecutive_low_wr_cycles": 0,
+    "description": "Được cập nhật real-time sau mỗi kỳ quay bởi Evolution Engine"
+  },
+  "evolution_schedule": {
+    "evening_backtest_hour": 22,
+    "evening_backtest_minute": 0,
+    "inter_draw_backtest_enabled": true,
+    "inter_draw_backtest_window_minutes": 10,
+    "inter_draw_n_test": 50,
+    "midnight_dream_hour": 0,
+    "midnight_dream_minute": 0,
+    "min_data_points_required": 60,
+    "weight_improvement_threshold": 0.02,
+    "validation_n_test": 50,
+    "description": "evening_backtest: chạy lúc 22h00 / inter_draw: chạy mỗi 10 phút giữa 2 kỳ"
+  },
+  "mutation_history": [
+    {
+      "generation": 2,
+      "timestamp": "2026-04-19T16:43:03.066099",
+      "reason": "inter_draw_10min",
+      "old_weights": [
+        0.25,
+        0.35,
+        0.25,
+        0.15
+      ],
+      "new_weights": [
+        0.47,
+        0.2409,
+        0.1927,
+        0.0964
+      ],
+      "old_win_rate_pct": 22.0,
+      "new_win_rate_pct": 34.0,
+      "improvement_pct": 12.0,
+      "draws_analyzed": 337
+    },
+    {
+      "generation": 1,
+      "timestamp": "2026-04-18T10:39:14.778277",
+      "reason": "inter_draw_10min",
+      "old_weights": [
+        0.45,
+        0.25,
+        0.2,
+        0.1
+      ],
+      "new_weights": [
+        0.25,
+        0.35,
+        0.25,
+        0.15
+      ],
+      "old_win_rate_pct": 18.0,
+      "new_win_rate_pct": 24.0,
+      "improvement_pct": 6.0,
+      "draws_analyzed": 172
+    }
+  ],
+  "performance_ledger": {
+    "all_time_best_win_rate": 34.0,
+    "all_time_best_weights": [
+      0.47,
+      0.2409,
+      0.1927,
+      0.0964
+    ],
+    "total_mutations": 2,
+    "total_draws_analyzed": 509,
+    "last_30d_win_rate": 0.0,
+    "consecutive_winning_sessions": 0,
+    "description": "Sổ cái lịch sử hiệu suất — cơ sở để so sánh tiến hóa"
+  }
+}

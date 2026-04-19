@@ -506,6 +506,16 @@ async def _server_auto_bet_task(new_draw_id_str: str, winning_numbers: list):
         # DNA state broadcast — cập nhật Agent DNA panel real-time
         _dna_payload = _build_dna_broadcast_payload(rl_action, rl_state, market_entropy)
         await manager.broadcast(json.dumps({"event": "DNA_STATE", "payload": _dna_payload}, ensure_ascii=False))
+
+        # Neural Telemetry — ghi nhận nhịp tim hệ thống vào Supabase
+        await neural_telemetry_track("NEW_DRAW", {
+            "draw_id":    new_draw_id,
+            "keno_pnl":   VIRTUAL_WALLET.get("daily_keno_pnl", 0),
+            "mf_pnl":     VIRTUAL_WALLET.get("daily_mf_pnl", 0),
+            "win_rate":   _daily_wr,
+            "loss_streak": VIRTUAL_WALLET.get("current_loss_streak", 0),
+            "rl_action":  rl_action,
+        })
     except Exception as e:
         print(f"[SERVER-BET] Broadcast error: {e}")
 
@@ -944,6 +954,24 @@ async def _save_behavior_to_supabase(data: dict):
             client.table("user_behavior_logs").insert(data).execute()
     except Exception:
         pass  # Graceful degradation — lưu vào RAM thay thế
+
+async def neural_telemetry_track(event_name: str, details: dict, session_id: str = "default"):
+    """Ghi nhận nhịp tim hệ thống vào Supabase telemetry_logs (non-blocking)."""
+    try:
+        from database.supabase_client import get_client
+        client = get_client()
+        if client:
+            import asyncio
+            await asyncio.to_thread(
+                lambda: client.table("telemetry_logs").insert({
+                    "event_name": event_name,
+                    "details":    details,
+                    "session_id": session_id,
+                    "created_at": datetime.utcnow().isoformat(),
+                }).execute()
+            )
+    except Exception:
+        pass
 
 @app.post("/api/track_behavior")
 async def track_user_behavior(req: BehaviorLogRequest, bg: BackgroundTasks):

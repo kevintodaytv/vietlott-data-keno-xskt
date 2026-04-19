@@ -84,3 +84,19 @@ ALTER TABLE user_personas
 
 -- Enable Realtime cho behavior logs
 ALTER PUBLICATION supabase_realtime ADD TABLE user_behavior_logs;
+
+-- ── BẢNG: Neural Telemetry Logs ──────────────────────────────────────────────
+-- Ghi nhận "nhịp tim" hệ thống: mỗi sự kiện quan trọng (dự đoán, kỳ quay,
+-- thắng/thua, mutation, circuit breaker) được lưu vào đây để phân tích sau.
+CREATE TABLE IF NOT EXISTS telemetry_logs (
+    id          BIGSERIAL PRIMARY KEY,
+    event_name  TEXT NOT NULL,          -- NEW_DRAW, PREDICTION_MADE, WIN, LOSS, MUTATION, CIRCUIT_BREAK
+    details     JSONB DEFAULT '{}',     -- Payload linh hoạt theo từng loại event
+    session_id  TEXT DEFAULT 'default',
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_telemetry_event ON telemetry_logs (event_name, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_telemetry_session ON telemetry_logs (session_id, created_at DESC);
+
+-- Enable Realtime cho telemetry (Dashboard theo dõi live)
+ALTER PUBLICATION supabase_realtime ADD TABLE telemetry_logs;
