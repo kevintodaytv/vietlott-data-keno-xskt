@@ -932,9 +932,8 @@ class BehaviorLogRequest(BaseModel):
     time_spent_seconds: int | None = None
     region: str | None = None
 
-# In-memory ring buffer (fallback khi Supabase chưa setup)
-_BEHAVIOR_LOG: list[dict] = []
-_MAX_BEHAVIOR_LOG = 500
+# In-memory ring buffer — dùng chung với boss_agent.py qua shared_state
+from shared_state import _BEHAVIOR_LOG, _MAX_BEHAVIOR_LOG
 
 async def _save_behavior_to_supabase(data: dict):
     """Lưu behavior event vào Supabase user_behavior_logs (chạy ngầm)."""

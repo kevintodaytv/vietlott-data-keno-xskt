@@ -160,10 +160,12 @@ Sau khi tự hành động, báo cáo kết quả ngay: 'Em đã tự động [h
 LĨNH VỰC: Xổ số Keno Việt Nam, quản trị rủi ro, Circuit Breaker, Hybrid Brain, tự tiến hóa."""
 
 def _get_behavioral_summary(session_id: str = "boss_001") -> dict | None:
-    """Lấy behavioral summary từ main.py ring buffer (shared via import)."""
+    """Lấy behavioral summary từ shared_state ring buffer."""
     try:
-        import main as _main
-        logs = [e for e in _main._BEHAVIOR_LOG if e.get("session_id") == session_id][-100:]
+        import sys, os
+        sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+        from shared_state import _BEHAVIOR_LOG
+        logs = [e for e in _BEHAVIOR_LOG if e.get("session_id") == session_id][-100:]
         if not logs:
             return None
         from collections import Counter
