@@ -922,6 +922,129 @@ async def trigger_refresh():
     await manager.broadcast("NEW_DRAW_DETECTED")
     return {"status": "BROADCAST_SENT"}
 
+
+# ── PREDICTIVE TELEMETRY — Mắt Thần ──────────────────────────────────────────
+class BehaviorLogRequest(BaseModel):
+    session_id: str = "boss_001"
+    action_type: str   # OPEN_TAB, USER_LOGIN, CLICK_PREDICT, OPEN_SETTINGS, etc.
+    target_name: str   # Tab_KENO, Tab_MARKET_FLOW, APP, SETTINGS_PANEL, etc.
+    hour: int | None = None
+    time_spent_seconds: int | None = None
+    region: str | None = None
+
+# In-memory ring buffer (fallback khi Supabase chưa setup)
+_BEHAVIOR_LOG: list[dict] = []
+_MAX_BEHAVIOR_LOG = 500
+
+async def _save_behavior_to_supabase(data: dict):
+    """Lưu behavior event vào Supabase user_behavior_logs (chạy ngầm)."""
+    try:
+        from database.supabase_client import get_client
+        client = get_client()
+        if client:
+            client.table("user_behavior_logs").insert(data).execute()
+    except Exception:
+        pass  # Graceful degradation — lưu vào RAM thay thế
+
+@app.post("/api/track_behavior")
+async def track_user_behavior(req: BehaviorLogRequest, bg: BackgroundTasks):
+    now = datetime.now()
+    event = {
+        "session_id":   req.session_id,
+        "action_type":  req.action_type,
+        "target_name":  req.target_name,
+        "hour":         req.hour if req.hour is not None else now.hour,
+        "time_spent_seconds": req.time_spent_seconds,
+        "region":       req.region,
+        "created_at":   now.isoformat(),
+    }
+    # Lưu RAM (ring buffer)
+    _BEHAVIOR_LOG.append(event)
+    if len(_BEHAVIOR_LOG) > _MAX_BEHAVIOR_LOG:
+        del _BEHAVIOR_LOG[:-_MAX_BEHAVIOR_LOG]
+
+    # Lưu Supabase ngầm (non-blocking)
+    bg.add_task(_save_behavior_to_supabase, {
+        "session_id":  event["session_id"],
+        "action_type": event["action_type"],
+        "target_name": event["target_name"],
+        "created_at":  event["created_at"],
+    })
+
+    # USER_LOGIN → kích hoạt Boss Agent tiên đoán proactive
+    if req.action_type == "USER_LOGIN":
+        bg.add_task(_trigger_predictive_greeting, req.session_id, req.hour or now.hour)
+
+    return {"status": "tracked"}
+
+@app.get("/api/behavioral_summary")
+async def get_behavioral_summary(session_id: str = "boss_001", limit: int = 100):
+    """Trả về tóm tắt hành vi để Boss Agent inject vào System Prompt."""
+    events = [e for e in _BEHAVIOR_LOG if e["session_id"] == session_id][-limit:]
+    if not events:
+        return {"summary": None, "events": []}
+
+    # Tính toán thống kê nhanh
+    from collections import Counter
+    tab_counts = Counter(e["target_name"] for e in events if e["action_type"] == "OPEN_TAB")
+    login_hours = [e["hour"] for e in events if e["action_type"] == "USER_LOGIN" and e["hour"] is not None]
+    avg_tab_time = {
+        t: round(sum(e.get("time_spent_seconds",0) or 0 for e in events
+                     if e["action_type"] == "LEAVE_TAB" and e["target_name"] == t) /
+                 max(tab_counts.get(t,1), 1), 1)
+        for t in tab_counts
+    }
+    summary = {
+        "favorite_tabs":    [t for t, _ in tab_counts.most_common(3)],
+        "active_hours":     sorted(set(login_hours))[-5:] if login_hours else [],
+        "avg_tab_time_sec": avg_tab_time,
+        "total_events":     len(events),
+        "last_action":      events[-1]["action_type"] if events else None,
+        "last_target":      events[-1]["target_name"] if events else None,
+    }
+    return {"summary": summary, "events": events[-20:]}
+
+async def _trigger_predictive_greeting(session_id: str, hour: int):
+    """Khi USER_LOGIN → Boss Agent tự phát ngôn proactive dựa vào behavioral profile."""
+    await asyncio.sleep(2)  # Đợi frontend WebSocket kết nối xong
+    try:
+        from agents.boss_agent import _load_dna, _keno_context
+        # Lấy behavioral summary
+        events = [e for e in _BEHAVIOR_LOG if e["session_id"] == session_id][-50:]
+        from collections import Counter
+        tab_counts = Counter(e["target_name"] for e in events if e["action_type"] == "OPEN_TAB")
+        fav_tabs = [t for t, _ in tab_counts.most_common(2)]
+
+        dna = _load_dna()
+        rt  = dna.get("realtime_params", {})
+        loss_streak = int(rt.get("current_loss_streak", 0))
+        win_rate    = float(rt.get("session_win_rate_pct", 0))
+        pnl         = int(rt.get("session_pnl_vnd", 0))
+
+        # Xây dựng lời chào tiên đoán
+        hour_label = "buổi sáng" if 5 <= hour < 12 else ("buổi chiều" if 12 <= hour < 18 else "buổi tối" if 18 <= hour < 22 else "đêm khuya")
+        fav_str = f"Tab {' & '.join(fav_tabs)}" if fav_tabs else "Dashboard"
+
+        if loss_streak >= 3:
+            greeting = (f"Sếp vào {hour_label}. Em thấy chuỗi thua đang là {loss_streak} kỳ, "
+                        f"Win Rate {win_rate:.0f}%. "
+                        f"Em đề xuất xem lại {fav_str} trước, không nên vào lệnh gấp lúc này Sếp nhé!")
+        elif pnl > 0:
+            greeting = (f"Chào Sếp! {hour_label.capitalize()} đẹp — PnL hôm nay đang +{pnl:,}đ. "
+                        f"Theo thói quen, Sếp hay vào {fav_str} trước — em đã chuẩn bị dữ liệu sẵn rồi!")
+        else:
+            greeting = (f"Sếp online {hour_label}. Hệ thống đang ONLINE. "
+                        f"{'Cầu đang trong nhịp bình thường — sẵn sàng vào lệnh.' if win_rate >= 30 else 'Win rate thấp — em khuyên theo dõi thêm 3-5 kỳ trước khi bet.'}")
+
+        await manager.broadcast(json.dumps({
+            "event": "BOSS_ALERT",
+            "message": greeting,
+            "type": "PREDICTIVE_GREETING"
+        }))
+        print(f"[PREDICTIVE] USER_LOGIN greeting sent: {greeting[:80]}...")
+    except Exception as e:
+        print(f"[PREDICTIVE] Greeting failed: {e}")
+
 async def _trigger_proactive_boss():
     await asyncio.sleep(2) # Đợi hệ thống update context xong
     from agents.boss_agent import _keno_context, _GEMINI_AVAILABLE

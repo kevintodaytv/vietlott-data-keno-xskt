@@ -159,7 +159,30 @@ Sau khi tự hành động, báo cáo kết quả ngay: 'Em đã tự động [h
 
 LĨNH VỰC: Xổ số Keno Việt Nam, quản trị rủi ro, Circuit Breaker, Hybrid Brain, tự tiến hóa."""
 
-def _generate_dynamic_system_prompt(dna: dict, persona: dict | None = None) -> str:
+def _get_behavioral_summary(session_id: str = "boss_001") -> dict | None:
+    """Lấy behavioral summary từ main.py ring buffer (shared via import)."""
+    try:
+        import main as _main
+        logs = [e for e in _main._BEHAVIOR_LOG if e.get("session_id") == session_id][-100:]
+        if not logs:
+            return None
+        from collections import Counter
+        tab_counts  = Counter(e["target_name"] for e in logs if e["action_type"] == "OPEN_TAB")
+        login_hours = [e["hour"] for e in logs if e["action_type"] == "USER_LOGIN" and e.get("hour") is not None]
+        fav_tabs    = [t for t, _ in tab_counts.most_common(3)]
+        last_action = logs[-1]["action_type"] if logs else None
+        last_target = logs[-1]["target_name"] if logs else None
+        return {
+            "favorite_tabs": fav_tabs,
+            "active_hours":  sorted(set(login_hours))[-3:] if login_hours else [],
+            "last_action":   last_action,
+            "last_target":   last_target,
+            "total_events":  len(logs),
+        }
+    except Exception:
+        return None
+
+def _generate_dynamic_system_prompt(dna: dict, persona: dict | None = None, session_id: str = "default") -> str:
     rt      = dna.get("realtime_params", {})
     perf    = dna.get("performance_ledger", {})
     hw      = dna.get("hybrid_brain_weights", {})
@@ -171,16 +194,16 @@ def _generate_dynamic_system_prompt(dna: dict, persona: dict | None = None) -> s
     generation  = int(dna.get("evolution_generation", 0))
     best_wr     = float(perf.get("all_time_best_win_rate", 0))
 
-    target_wr         = 35.0
-    mutation_temp     = round(max(0.1, min(1.0, (target_wr - win_rate) / target_wr)), 2)
-    temp_label        = "🔥CAO" if mutation_temp > 0.7 else "⚡TRUNG BÌNH" if mutation_temp > 0.4 else "✅THẤP"
+    target_wr     = 35.0
+    mutation_temp = round(max(0.1, min(1.0, (target_wr - win_rate) / target_wr)), 2)
+    temp_label    = "🔥CAO" if mutation_temp > 0.7 else "⚡TRUNG BÌNH" if mutation_temp > 0.4 else "✅THẤP"
 
     base = dna.get("system_prompt", _BASE_SYSTEM_PROMPT) or _BASE_SYSTEM_PROMPT
 
     persona_note = ""
     if persona:
-        mood    = persona.get("mood", "CALM")
-        risk    = persona.get("risk_appetite", "MEDIUM")
+        mood = persona.get("mood", "CALM")
+        risk = persona.get("risk_appetite", "MEDIUM")
         persona_note = f"\nSẾP HIỆN TẠI: Tâm trạng={mood}, Khẩu vị rủi ro={risk} — điều chỉnh tone tương ứng."
 
     stats = f"""
@@ -192,6 +215,25 @@ TRẠNG THÁI REAL-TIME HỆ THỐNG:
 - Nhiệt độ đột biến: {mutation_temp} [{temp_label}] — {'Cần AGGRESSIVE mutation!' if mutation_temp > 0.7 else 'Giữ ổn định.'}
 - Tổng đột biến: {mutations} | Trọng số: F={hw.get('w_f',0.25):.2f} R={hw.get('w_r',0.35):.2f} C={hw.get('w_c',0.25):.2f} A={hw.get('w_a',0.15):.2f}
 - Delta trend: {rt.get('delta_trend','NORMAL')} | Bias Chẵn/Lẻ: {rt.get('market_bias_chan_le','HÒA')} | Lớn/Nhỏ: {rt.get('market_bias_lon_nho','HÒA')}{persona_note}"""
+
+    # ── BEHAVIORAL PROFILE — Predictive Engine ──────────────────────────────
+    behavior = _get_behavioral_summary(session_id)
+    behavior_note = ""
+    if behavior and behavior.get("total_events", 0) >= 3:
+        fav = ", ".join(behavior["favorite_tabs"]) if behavior["favorite_tabs"] else "chưa rõ"
+        hrs = behavior["active_hours"]
+        last = behavior.get("last_action", "")
+        behavior_note = f"""
+
+HỒ SƠ HÀNH VI SẾP (Predictive Engine):
+- Tab hay vào nhất: {fav}
+- Khung giờ online: {hrs if hrs else 'đang học'}
+- Hành động VỪA XẢY RA: {last} → {behavior.get('last_target','')}
+- [QUY TẮC TIÊN ĐOÁN] Dựa trên thói quen, đoán ý định TIẾP THEO của Sếp và DỌN SẴN MÂM.
+  Không chào hỏi suông. Nếu Sếp vừa mở Tab KENO → gợi ý ngay anchor + trend.
+  Nếu Sếp vừa mở Tab MARKET_FLOW → báo ngay bias Chẵn/Lẻ & Lớn/Nhỏ.
+  Nếu Sếp vừa login → chào ngắn + báo ngay tình trạng hôm nay."""
+        stats += behavior_note
 
     keno_ctx = _build_context_string()
     return base + stats + keno_ctx
@@ -814,7 +856,7 @@ async def boss_chat(user_message: str, session_id: str = "default") -> str:
 
     dna     = _load_dna()
     persona = get_current_persona(session_id)
-    system_prompt = _generate_dynamic_system_prompt(dna, persona)
+    system_prompt = _generate_dynamic_system_prompt(dna, persona, session_id)
 
     # Enrich with vector memories (non-blocking if slow)
     try:
@@ -878,7 +920,7 @@ async def boss_chat_stream(user_message: str, session_id: str = "default"):
 
     dna     = _load_dna()
     persona = get_current_persona(session_id)
-    system_prompt = _generate_dynamic_system_prompt(dna, persona)
+    system_prompt = _generate_dynamic_system_prompt(dna, persona, session_id)
 
     try:
         rag_context = await asyncio.wait_for(retrieve_relevant_memories(user_message), timeout=3.0)
